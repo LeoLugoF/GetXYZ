@@ -32,8 +32,7 @@ i=$(($i+1))
 
 if [ "$(wc -w "1$1")" == 0 ];
 	then
-	echo "	No coordinates found"
-	rm "1$1"	
+	echo "	No coordinates found"	
 	else
 	echo "${filenamext%%.*}" >> "$1"
 	echo " " >> "$1"
@@ -48,5 +47,6 @@ if [ "$(wc -w "1$1")" == 0 ];
 		echo "	Not terminated."
 	fi
 	fi
+rm "1$1"
 done
 fi
