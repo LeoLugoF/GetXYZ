@@ -30,7 +30,7 @@ awk -F " " 'NF==6' $file | tac | awk '/Rotational/{p=1} p; /Number/{exit}' | tac
 
 i=$(($i+1))
 
-if [ "$(wc -w "1$1")" == 0 ];
+if [ "$(wc -w "1$1" | awk '{print $1}')" == 0 ];
 	then
 	echo "	No coordinates found"	
 	else
