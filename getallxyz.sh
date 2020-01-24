@@ -1,5 +1,19 @@
 #!/bin/bash
 
+#########################################################################
+#                              getallxyz                                #
+# Made by:  Leonardo Israel Lugo Fuentes (LeoLugoF)   			#
+# 									#
+# Date:     21/Junary/2020                                              #
+#                                                                       #
+# Searches all the gaussian outputs (*.out,*.log) in the giving		#
+# directory and subdirectories. Then, storages the last xyz coordinates #
+# found in the output in the giving file with its name			#
+#                                                                       #
+# Command line (i.e): bash getallxyz.sh [*.*]                           #
+# Example  :    bash getallxyz.sh compounds.txt                         #
+#########################################################################
+
 if [ -z "$1" ];
 then
 	echo "Insert after the script name the name of the file where all the info is going to be storaged"
