@@ -15,8 +15,7 @@ ptable=( ["1"]="H" ["2"]="He" ["3"]="Li" ["4"]="Be" ["5"]="B" ["6"]="C" ["7"]="N
  if [ -z "$1" ];
  then
 	echo "Insert the name of the gaussian output after the name of the script."
-	echo "This script extracts the xyz coordinates from a gaussian output"
-        echo "From the current directory and subdirectories."
+	echo "This script extracts the last xyz coordinates from a gaussian output"
  else
 
 awk -F " " 'NF==6' $1 | tac | awk '/Rotational/{p=1} p; /Number/{exit}' | tac | awk '/Number/{p=1} p; /Rotational/{exit}' | tail -n +2 | tac | tail -n +2 | tac | awk '{print $2 " " $4 " " $5 " " $6}' > "${1%%.*}1.xyz"
