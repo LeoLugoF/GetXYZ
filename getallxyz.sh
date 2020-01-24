@@ -2,7 +2,7 @@
 
 if [ -z "$1" ];
 then
-	echo "Insert the name of the file where all the info is going to be storaged after the script name."
+	echo "Insert after the script name the name of the file where all the info is going to be storaged"
 	echo "This script extracts all the xyz coordinates from gaussian output with extension *.out and *.log"
 	echo "From the current directory and subdirectories."
 else
