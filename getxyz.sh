@@ -1,5 +1,18 @@
 #!/bin/bash
 
+#########################################################################
+#                              getxyz	                                #
+# Made by:  Leonardo Israel Lugo Fuentes (LeoLugoF)   			#
+# 									#
+# Date:     21/Junary/2020                                              #
+#                                                                       #
+# This program reads gaussian output files				#
+# It searches the last XYZ coordinates found from the output		#
+#                                                                       #
+# Command line (i.e): bash getxyz.sh [*.log/*.out]                      #
+# Example  :    bash getxyz.sh water.out                                #
+#########################################################################
+
 declare -A ptable
 #ptable['key']='value'
 ptable=( ["1"]="H" ["2"]="He" ["3"]="Li" ["4"]="Be" ["5"]="B" ["6"]="C" ["7"]="N" ["8"]="O" 
