@@ -8,15 +8,21 @@
 #                                                                       #
 # Searches all the gaussian outputs (*.out,*.log) in the giving		#
 # directory and subdirectories. Then, storages the last xyz coordinates #
-# found in the output in the giving file with its name			#
+# found in the output in the giving file with its name.			#
 #                                                                       #
-# Command line (i.e): bash getallxyz.sh [*.*]                           #
-# Example  :    bash getallxyz.sh compounds.txt                         #
+# Command line (i.e): bash getallxyz.sh [*.*] [-e]                      #
+# Example 1 :   bash getallxyz.sh compounds.txt                         #
+# Example 2 :   bash getallxyz.sh compounds.txt -e                      #
+# 									#
+# Example 2 gets the last SCF or ONIOM energy from the output for       #
+# each compound 							#
 #########################################################################
+
+#!/bin/bash
 
 if [ -z "$1" ];
 then
-	echo "Insert after the script name the name of the file where all the info is going to be storaged"
+	echo "Insert the name of the file where all the info is going to be storaged after the script name."
 	echo "This script extracts all the xyz coordinates from gaussian output with extension *.out and *.log"
 	echo "From the current directory and subdirectories."
 else
@@ -34,7 +40,7 @@ i=1
 
 echo "Number of files found (*.out,*.log): $NFilesFound"
 
-for file in $(find $directory -type f -name "*.log" && find $directory -type f -name "*.out");
+for file in $(find $directory -type f -name "*.log" | sort -V);
 do 
 filenamext=$(basename $file)
 
@@ -46,13 +52,26 @@ i=$(($i+1))
 
 if [ "$(wc -w "1$1" | awk '{print $1}')" == 0 ];
 	then
-	echo "	No coordinates found"	
+	echo "	No coordinates found"
 	else
 	echo "${filenamext%%.*}" >> "$1"
+
+	SCFenergy=$(grep "extrapolated energy" $file | tail -1)
+	if [ "$2" == '-e' ]; then
+	if [[ $SCFenergy == *"extrapolated"* ]];
+	then
+		SCFenergy=$(grep "extrapolated energy" $file | tail -1 | awk '{print $5}')
+		echo "ONIOM energy = $SCFenergy" >> "$1"
+	else
+		SCFenergy=$(grep "SCF Done" $file | tail -1 | awk '{print $5}')
+		echo "SCF energy = $SCFenergy" >> "$1"
+	fi
+	fi
+
 	echo " " >> "$1"
 	awk '{print $0}' 1$1 >> "$1"
 	echo " " >> "$1"
-	finaline=$(tail -1 $1)
+	finaline=$(tail -1 $file)
 	echo -n "	Done! "
 	if [[ $finaline == *"Normal"* ]];
 	then
@@ -64,3 +83,4 @@ if [ "$(wc -w "1$1" | awk '{print $1}')" == 0 ];
 rm "1$1"
 done
 fi
+
