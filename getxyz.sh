@@ -32,6 +32,8 @@ ptable=( ["1"]="H" ["2"]="He" ["3"]="Li" ["4"]="Be" ["5"]="B" ["6"]="C" ["7"]="N
  else
 
 awk -F " " 'NF==6' $1 | tac | awk '/Rotational/{p=1} p; /Number/{exit}' | tac | awk '/Number/{p=1} p; /Rotational/{exit}' | tail -n +2 | tac | tail -n +2 | tac | awk '{print $2 " " $4 " " $5 " " $6}' > "${1%%.*}1.xyz"
+NAtoms=$(awk -F " " 'NF==6' $1 | tac | awk '/Rotational/{p=1} p; /Number/{exit}' | tac | awk '/Number/{p=1} p; /Rotational/{exit}' | tail -n +2 | tac | tail -n +2 | tac | tail -1 | awk '{print $1}')
+
 
 if [ "$(wc -w ${1%%.*}1.xyz)" == 0 ];
  then
@@ -39,7 +41,8 @@ if [ "$(wc -w ${1%%.*}1.xyz)" == 0 ];
 	 rm "${1%%.*}1.xyz"
  else
 
-echo "${1%%.*}" > "${1%%.*}.xyz"
+echo "$NAtoms" > "${1%%.*}.xyz"
+echo "${1%%.*}" >> "${1%%.*}.xyz"
 
 while IFS= read -r line
 do
