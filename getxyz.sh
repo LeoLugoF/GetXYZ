@@ -1,88 +1,61 @@
 #!/bin/bash
 
 #########################################################################
-#                              getallxyz                                #
+#                              getxyz	                                #
 # Made by:  Leonardo Israel Lugo Fuentes (LeoLugoF)   			#
 # 									#
 # Date:     21/Junary/2020                                              #
 #                                                                       #
-# Searches all the gaussian outputs (*.out,*.log) in the giving		#
-# directory and subdirectories. Then, storages the last xyz coordinates #
-# found in the output in the giving file with its name.			#
+# This program reads gaussian output files				#
+# It searches the last XYZ coordinates found from the output		#
 #                                                                       #
-# Command line (i.e): bash getallxyz.sh [*.*] [-e]                      #
-# Example 1 :   bash getallxyz.sh compounds.txt                         #
-# Example 2 :   bash getallxyz.sh compounds.txt -e                      #
-# 									#
-# Example 2 gets the last SCF or ONIOM energy from the output for       #
-# each compound 							#
+# Command line (i.e): bash getxyz.sh [*.log/*.out]                      #
+# Example  :    bash getxyz.sh water.out                                #
 #########################################################################
 
-#!/bin/bash
+declare -A ptable
+#ptable['key']='value'
+ptable=( ["1"]="H" ["2"]="He" ["3"]="Li" ["4"]="Be" ["5"]="B" ["6"]="C" ["7"]="N" ["8"]="O" 
+ ["9"]="F" ["10"]="Ne" ["11"]="Na" ["12"]="Mg" ["13"]="Al" ["14"]="Si" ["15"]="P" ["16"]="S" 
+  ["17"]="Cl" ["18"]="Ar" ["19"]="K" ["20"]="Ca" ["21"]="Sc" ["22"]="Ti" ["23"]="V" ["24"]="Cr"
+   ["25"]="Mn" ["26"]="Fe" ["27"]="Co" ["28"]="Ni" ["29"]="Cu" ["30"]="Zn" ["31"]="Ga" ["32"]="Ge"
+    ["33"]="As" ["34"]="Se" ["35"]="Br" ["36"]="Kr" ["37"]="Rb" ["38"]="Sr" ["39"]="Y" ["40"]="Zr"
+     ["41"]="Nb" ["42"]="Mo" ["43"]="Tc" ["44"]="Ru" ["45"]="Rh" ["46"]="Pd" ["47"]="Ag" ["48"]="Cd"
+      ["49"]="In" ["50"]="Sn" ["51"]="Sb" ["52"]="Te" ["53"]="I" ["54"]="Xe" ["55"]="Cs" ["56"]="Ba" 
+       ["71"]="Lu" ["72"]="Hf" ["73"]="Ta" ["74"]="W" ["75"]="Re" ["76"]="Os" ["77"]="Ir" ["78"]="Pt"
+        ["79"]="Au" ["80"]="Hg" ["81"]="Tl" ["82"]="Pb" ["83"]="Bi" ["84"]="Po" ["85"]="At" ["86"]="Rn" )
 
 if [ -z "$1" ];
 then
-	echo "Insert the name of the file where all the info is going to be storaged after the script name."
-	echo "This script extracts all the xyz coordinates from gaussian output with extension *.out and *.log"
-	echo "From the current directory and subdirectories."
+	echo "Insert the name of the gaussian output after the name of the script."
+	echo "This script extracts the last xyz coordinates from a gaussian output"
 else
 
-	if [ -f $1 ];
+	awk -F " " 'NF==6' $1 | tac | awk '/Rotational/{p=1} p; /Number/{exit}' | tac | awk '/Number/{p=1} p; /Rotational/{exit}' | tail -n +2 | tac | tail -n +2 | tac | awk '{print $2 " " $4 " " $5 " " $6}' > "${1%%.*}1.xyz"
+	NAtoms=$(awk -F " " 'NF==6' $1 | tac | awk '/Rotational/{p=1} p; /Number/{exit}' | tac | awk '/Number/{p=1} p; /Rotational/{exit}' | tail -n +2 | tac | tail -n +2 | tac | tail -1 | awk '{print $1}')
+
+
+	if [ "$(wc -w ${1%%.*}1.xyz)" == 0 ];
 	then
-		rm $1
-	fi
-
-	NFilesFoundlog=$(find $directory -name "*.log" | wc -l)
-	NFilesFoundOut=$(find $directory -name "*.out" | wc -l)
-	NFilesFound=$(($NFilesFoundlog+$NFilesFoundOut))
-
-	i=1
-
-	echo "Number of files found (*.out,*.log): $NFilesFound"
-
-	for file in $(find $directory -type f -name "*.log" | sort -V);
-	do 
-		filenamext=$(basename $file)
-
-		echo -n "$(tput sgr0)($i/$NFilesFound) extracting from file: $file"
-
-		awk -F " " 'NF==6' $file | tac | awk '/Rotational/{p=1} p; /Number/{exit}' | tac | awk '/Number/{p=1} p; /Rotational/{exit}' | tail -n +2 | tac | tail -n +2 | tac | awk -v OFS="    " '{print $2, $4, $5, $6}' > "1$1"
-		
-		sed -i 's/ -/-/g' 1$1
-		sed -i 's/^\([0-9][0-9]\) \( \)/\1\2/' 1$1
-		i=$(($i+1))
-		
-		if [ "$(wc -w "1$1" | awk '{print $1}')" == 0 ];
+		echo "No coordinates found"
+		rm "${1%%.*}1.xyz"
+	else
+		echo "$NAtoms" > "${1%%.*}.xyz"
+		echo "${1%%.*}" >> "${1%%.*}.xyz"
+		while IFS= read -r line
+		do
+			an=$(echo "$line" | awk '{print $1}') 
+			as="${ptable[$an]}"
+			Info=$(echo "$line" | awk '{print $1=as " " $2 " " $3 " " $4}' as="$as")
+			echo $Info >> "${1%%.*}.xyz"
+		done < "${1%%.*}1.xyz"
+		rm "${1%%.*}1.xyz"
+		finaline=$(tail -1 $1)
+		if [[ $finaline == *"Normal"* ]];
 		then
-			echo "$(tput setaf 1) No coordinates found"
+			echo "Normal Termination."
 		else
-
-			echo "${filenamext%%.*}" >> "$1"
-
-			SCFenergy=$(grep "extrapolated energy" $file | tail -1)
-			if [ "$2" == '-e' ]; then
-				if [[ $SCFenergy == *"extrapolated"* ]];
-				then
-					SCFenergy=$(grep "extrapolated energy" $file | tail -1 | awk '{print $5}')
-					echo "SCF energy = $SCFenergy" >> "$1"
-				else
-					SCFenergy=$(grep "SCF Done" $file | tail -1 | awk '{print $5}')
-					echo "SCF energy = $SCFenergy" >> "$1"
-				fi
-			fi
-			echo " " >> "$1"
-			awk '{print $0}' 1$1 >> "$1"
-			echo " " >> "$1"
-			finaline=$(tail -1 $file)
-			echo -n "$(tput setaf 2)	Done! "
-			if [[ $finaline == *"Normal"* ]];
-			then
-				echo "$(tput setaf 2)	Normal Termination."
-			else
-				echo "$(tput setaf 1)	Not terminated."
-			fi
+			echo "Not terminated."
 		fi
-		rm "1$1"
-	done
+	fi
 fi
-
