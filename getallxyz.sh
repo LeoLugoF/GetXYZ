@@ -46,13 +46,13 @@ else
 
 		echo -n "$(tput sgr0)($i/$NFilesFound) extracting from file: $file"
 
-		awk -F " " 'NF==6' $file | tac | awk '/Rotational/{p=1} p; /Number/{exit}' | tac | awk '/Number/{p=1} p; /Rotational/{exit}' | tail -n +2 | tac | tail -n +2 | tac | awk -v OFS="    " '{print $2, $4, $5, $6}' > "1$1"
+		awk -F " " 'NF==6' $file | tac | awk '/Rotational/{p=1} p; /Number/{exit}' | tac | awk '/Number/{p=1} p; /Rotational/{exit}' | tail -n +2 | tac | tail -n +2 | tac | awk -v OFS="      " '{print $2, $4, $5, $6}' > "1$1"
 		
 		#Gets right the columns for negative signs
-		sed -i 's/ -/-/g' 1$1
+		sed -i 's/  -/-/g' 1$1
 		#Deletes one space at the beggining of the line of each line in file for Atomic number above two numbers.
-                sed -i 's/^\([0-9][0-9]  \) \(-\)/\1\2/' 1$1
-                sed -i 's/^\([0-9][0-9]    \) \([0-9]\)/\1\2/' 1$1
+                #sed -i 's/^\([0-9][0-9]  \) \(-\)/\1\2/' 1$1
+                #sed -i 's/^\([0-9][0-9]    \) \([0-9]\)/\1\2/' 1$1
 		i=$(($i+1))
 		
 		if [ "$(wc -w "1$1" | awk '{print $1}')" == 0 ];
